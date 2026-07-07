@@ -6,211 +6,132 @@
     <title>환율 NOW - 인터랙티브 리포트</title>
     
     <!-- iOS PWA Meta Tags -->
-    <!-- 홈 화면 추가 시 표시될 아이콘 설정 -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/263/263142.png">
-    <!-- 웹앱으로 작동하도록 설정 (주소창 숨김) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <!-- 상태 표시줄 스타일 설정 -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- 홈 화면에 표시될 앱 이름 -->
     <meta name="apple-mobile-web-app-title" content="환율 NOW">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        
-        body {
-            font-family: 'Noto+Sans+KR', sans-serif;
-            background-color: #faf9f6; 
-            color: #2d2d2d;
-            padding-top: env(safe-area-inset-top); /* iOS Notch 지원 */
-        }
 
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 400px;
-        }
-
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 350px;
-            }
-        }
-
-        .keypad-button {
-            transition: all 0.1s ease;
-            user-select: none;
-        }
-        
-        .keypad-button:active {
-            transform: scale(0.95);
-            background-color: #e5e7eb;
-        }
-
-        .currency-row {
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
-        }
-
-        .currency-row.active {
-            background-color: #ffffff;
-            border-color: #2563eb;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-
-        .nav-tab.active {
-            color: #2563eb;
-            border-bottom: 2px solid #2563eb;
-        }
-
-        /* 커스텀 스크롤바 */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 10px;
-        }
-
-        .expression-display {
-            font-size: 0.75rem;
-            color: #9ca3af;
-            height: 1rem;
-        }
-
-        .dynamic-text {
-            word-break: break-all;
-            line-height: 1.2;
-        }
-    </style>
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="index.css">
 </head>
-<body class="antialiased">
+<body>
 
-    <!-- 애플리케이션 구조 계획: 
-        1. 메타 데이터: iOS 홈 화면 아이콘 및 PWA 최적화 유지.
-        2. 네비게이션: PHP, USD, THB, VND 탭 메뉴 유지.
-        3. 대시보드: 요청에 따라 설명 문구를 제거하여 데이터 중심의 레이아웃으로 변경.
-        4. 실시간 로직: 소수점 입력을 포함한 사칙연산 계산기 및 실시간 데이터 연동 유지.
-    -->
-
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="container">
         <!-- 상단 네비게이션 -->
-        <header class="mb-8">
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl" id="logo-icon">₱</div>
-                    <h1 class="text-xl font-bold text-gray-800">환율 NOW</h1>
+        <header>
+            <div class="header-top">
+                <div class="logo-group">
+                    <div class="logo-badge" id="logo-icon">₱</div>
+                    <h1>환율 NOW</h1>
                 </div>
-                <div class="text-right">
-                    <div class="text-xs text-gray-400 font-medium" id="api-status">실시간 데이터 연결 중...</div>
-                    <div class="text-[10px] text-gray-300 font-medium" id="last-updated">최종 확인: -</div>
+                <div class="status-group">
+                    <div class="api-status" id="api-status">실시간 데이터 연결 중...</div>
+                    <div class="last-updated" id="last-updated">최종 확인: -</div>
                 </div>
             </div>
             
-            <nav class="flex border-b border-gray-200 overflow-x-auto whitespace-nowrap scrollbar-hide">
-                <button onclick="switchView('PHP')" id="nav-php" class="nav-tab active px-4 sm:px-6 py-2 font-bold text-sm transition-all">페소 (PHP)</button>
-                <button onclick="switchView('USD')" id="nav-usd" class="nav-tab px-4 sm:px-6 py-2 font-bold text-sm text-gray-400 transition-all">달러 (USD)</button>
-                <button onclick="switchView('THB')" id="nav-thb" class="nav-tab px-4 sm:px-6 py-2 font-bold text-sm text-gray-400 transition-all">바트 (THB)</button>
-                <button onclick="switchView('VND')" id="nav-vnd" class="nav-tab px-4 sm:px-6 py-2 font-bold text-sm text-gray-400 transition-all">동 (VND 100)</button>
+            <nav class="nav-tabs">
+                <button onclick="switchView('PHP')" id="nav-php" class="nav-tab active">페소 (PHP)</button>
+                <button onclick="switchView('USD')" id="nav-usd" class="nav-tab">달러 (USD)</button>
+                <button onclick="switchView('THB')" id="nav-thb" class="nav-tab">바트 (THB)</button>
+                <button onclick="switchView('VND')" id="nav-vnd" class="nav-tab">동 (VND 100)</button>
             </nav>
         </header>
 
-        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <main class="main-grid">
             
             <!-- 리포트 섹션 1: 실시간 교차환율 계산기 -->
-            <section class="lg:col-span-5 space-y-6">
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                    <h2 class="text-lg font-bold mb-4 px-2" id="dashboard-title">PHP 환율</h2>
-                    
-                    <!-- 설명 문구 삭제됨 -->
+            <section>
+                <div class="card">
+                    <h2 class="card-title" id="dashboard-title">PHP 환율</h2>
 
                     <!-- 통화 리스트 -->
-                    <div class="space-y-3 mb-8" id="currency-list">
+                    <div class="currency-list" id="currency-list">
                         <!-- 타겟 통화 행 -->
-                        <div id="row-target" class="currency-row active flex items-center justify-between p-4 rounded-2xl cursor-pointer bg-gray-50" data-code="TARGET">
-                            <div class="flex items-center space-x-3">
-                                <span class="text-2xl" id="target-flag">🇵🇭</span>
-                                <span class="font-bold text-gray-700" id="target-code-display">PHP</span>
-                                <span class="text-blue-600 text-xs font-bold active-label">입력 중</span>
+                        <div id="row-target" class="currency-row active" data-code="TARGET">
+                            <div class="row-left">
+                                <span class="flag" id="target-flag">🇵🇭</span>
+                                <span class="currency-code" id="target-code-display">PHP</span>
+                                <span class="input-badge active-label">입력 중</span>
                             </div>
-                            <div class="text-right max-w-[60%] overflow-hidden">
-                                <div class="expression-display" id="expr-target"></div>
-                                <div class="text-xl font-bold tracking-tight text-blue-600 dynamic-text" id="display-target">0</div>
+                            <div class="row-right">
+                                <div class="expr-display" id="expr-target"></div>
+                                <div class="val-display" id="display-target">0</div>
                             </div>
                         </div>
 
                         <!-- KRW 행 -->
-                        <div id="row-krw" class="currency-row flex items-center justify-between p-4 rounded-2xl cursor-pointer bg-gray-50" data-code="KRW">
-                            <div class="flex items-center space-x-3">
-                                <span class="text-2xl">🇰🇷</span>
-                                <span class="font-bold text-gray-700">KRW</span>
-                                <span class="text-blue-600 text-xs font-bold active-label hidden">입력 중</span>
+                        <div id="row-krw" class="currency-row" data-code="KRW">
+                            <div class="row-left">
+                                <span class="flag">🇰🇷</span>
+                                <span class="currency-code">KRW</span>
+                                <span class="input-badge active-label hidden">입력 중</span>
                             </div>
-                            <div class="text-right max-w-[60%] overflow-hidden">
-                                <div class="expression-display" id="expr-krw"></div>
-                                <div class="text-xl font-bold tracking-tight text-gray-700 dynamic-text" id="display-KRW">0</div>
+                            <div class="row-right">
+                                <div class="expr-display" id="expr-krw"></div>
+                                <div class="val-display" id="display-KRW">0</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- 사칙연산 키패드 -->
-                    <div class="grid grid-cols-4 gap-2">
-                        <div class="keypad-button bg-orange-50 text-orange-600 font-bold p-4 rounded-xl text-center cursor-pointer text-xl" data-key="C">C</div>
-                        <div class="keypad-button bg-blue-50 text-blue-600 font-bold p-4 rounded-xl text-center cursor-pointer text-xl" data-key="/">÷</div>
-                        <div class="keypad-button bg-blue-50 text-blue-600 font-bold p-4 rounded-xl text-center cursor-pointer text-xl" data-key="*">×</div>
-                        <div class="keypad-button bg-gray-100 text-gray-600 font-bold p-4 rounded-xl text-center cursor-pointer text-xl" data-key="DEL">⌫</div>
+                    <div class="keypad">
+                        <div class="keypad-btn action-clear" data-key="C">C</div>
+                        <div class="keypad-btn operator" data-key="/">÷</div>
+                        <div class="keypad-btn operator" data-key="*">×</div>
+                        <div class="keypad-btn action-delete" data-key="DEL">⌫</div>
 
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl" data-key="7">7</div>
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl" data-key="8">8</div>
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl" data-key="9">9</div>
-                        <div class="keypad-button bg-blue-50 text-blue-600 font-bold p-4 rounded-xl text-center cursor-pointer text-xl" data-key="-">−</div>
+                        <div class="keypad-btn" data-key="7">7</div>
+                        <div class="keypad-btn" data-key="8">8</div>
+                        <div class="keypad-btn" data-key="9">9</div>
+                        <div class="keypad-btn operator" data-key="-">−</div>
 
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl" data-key="4">4</div>
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl" data-key="5">5</div>
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl" data-key="6">6</div>
-                        <div class="keypad-button bg-blue-50 text-blue-600 font-bold p-4 rounded-xl text-center cursor-pointer text-xl" data-key="+">+</div>
+                        <div class="keypad-btn" data-key="4">4</div>
+                        <div class="keypad-btn" data-key="5">5</div>
+                        <div class="keypad-btn" data-key="6">6</div>
+                        <div class="keypad-btn operator" data-key="+">+</div>
 
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl" data-key="1">1</div>
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl" data-key="2">2</div>
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl" data-key="3">3</div>
-                        <div class="keypad-button bg-blue-600 text-white font-bold p-4 rounded-xl text-center cursor-pointer text-xl row-span-2 flex items-center justify-center" data-key="=">=</div>
+                        <div class="keypad-btn" data-key="1">1</div>
+                        <div class="keypad-btn" data-key="2">2</div>
+                        <div class="keypad-btn" data-key="3">3</div>
+                        <div class="keypad-btn action-equals" data-key="=">=</div>
 
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl col-span-2" data-key="0">0</div>
-                        <div class="keypad-button bg-gray-50 text-gray-700 font-medium p-4 rounded-xl text-center cursor-pointer text-xl font-black" id="dot-key" data-key=".">.</div>
+                        <div class="keypad-btn col-span-2" data-key="0">0</div>
+                        <div class="keypad-btn" id="dot-key" data-key=".">.</div>
                     </div>
                 </div>
             </section>
 
             <!-- 리포트 섹션 2: 시장 데이터 분석 -->
-            <section class="lg:col-span-7 space-y-8">
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-full flex flex-col">
-                    <h2 class="text-xl font-bold mb-4" id="chart-title">시장 동향 분석</h2>
-                    <p class="text-sm text-gray-500 mb-8 leading-relaxed">
+            <section>
+                <div class="card">
+                    <h2 class="card-title" id="chart-title">시장 동향 분석</h2>
+                    <p class="card-subtitle">
                         최근 7일간의 환율 변동 추이입니다. 베트남 동은 100단위당 원화 가치를 기준으로 시각화되었습니다.
                     </p>
 
-                    <div class="flex-grow flex flex-col justify-center">
+                    <div class="chart-wrapper">
                         <div class="chart-container">
                             <canvas id="trendsChart"></canvas>
                         </div>
                     </div>
-                    <div class="mt-8 grid grid-cols-2 gap-4">
-                        <div class="p-4 bg-gray-50 rounded-2xl text-center">
-                            <div class="text-xs text-gray-400 mb-1">최고가 (7일)</div>
-                            <div class="text-lg font-bold text-gray-700" id="stat-high">0 ₩</div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">최고가 (7일)</div>
+                            <div class="stat-val" id="stat-high">0 ₩</div>
                         </div>
-                        <div class="p-4 bg-gray-50 rounded-2xl text-center">
-                            <div class="text-xs text-gray-400 mb-1">최저가 (7일)</div>
-                            <div class="text-lg font-bold text-gray-700" id="stat-low">0 ₩</div>
+                        <div class="stat-box">
+                            <div class="stat-label">최저가 (7일)</div>
+                            <div class="stat-val" id="stat-low">0 ₩</div>
                         </div>
                     </div>
                 </div>
@@ -218,7 +139,7 @@
         </main>
 
         <!-- 하단 정보 섹션 -->
-        <footer class="mt-12 text-center text-gray-400 text-xs">
+        <footer>
             <p>© 2026 환율 NOW | 데이터 출처: 공공 데이터 연동 (실시간 글로벌 환율 데이터)</p>
         </footer>
     </div>
@@ -271,11 +192,11 @@
 
                 state.apiActive = true;
                 apiStatus.textContent = "글로벌 실시간 데이터 연결 성공";
-                apiStatus.className = "text-xs text-blue-600 font-bold";
+                apiStatus.className = "api-status connected";
                 lastUpdated.textContent = `최종 확인: ${new Date().toLocaleTimeString()}`;
             } catch (error) {
                 apiStatus.textContent = "네트워크 오프라인 모드 (로컬 데이터)";
-                apiStatus.className = "text-xs text-orange-500 font-medium";
+                apiStatus.className = "api-status offline";
                 lastUpdated.textContent = "최종 확인: 로컬 캐시";
             } finally {
                 updateCalculations();
@@ -319,15 +240,6 @@
 
             displays.KRW.textContent = formatter.format(krwValue);
             displays.target.textContent = formatter.format(targetValue);
-
-            adjustFontSize(displays.KRW, krwValue.toString().length);
-            adjustFontSize(displays.target, targetValue.toString().length);
-        };
-
-        const adjustFontSize = (el, length) => {
-            if (length > 13) el.style.fontSize = '0.85rem';
-            else if (length > 10) el.style.fontSize = '1.05rem';
-            else el.style.fontSize = '1.25rem';
         };
 
         const updateVisualActiveState = () => {
@@ -335,18 +247,13 @@
             rows.forEach(row => {
                 const code = row.getAttribute('data-code') === 'KRW' ? 'KRW' : state.view;
                 const label = row.querySelector('.active-label');
-                const display = row.querySelector('.dynamic-text');
                 
                 if (code === state.activeCurrency) {
                     row.classList.add('active');
                     label.classList.remove('hidden');
-                    display.classList.add('text-blue-600');
-                    display.classList.remove('text-gray-700');
                 } else {
                     row.classList.remove('active');
                     label.classList.add('hidden');
-                    display.classList.remove('text-blue-600');
-                    display.classList.add('text-gray-700');
                 }
             });
         };
@@ -359,7 +266,13 @@
             
             ['php', 'usd', 'thb', 'vnd'].forEach(c => {
                 const el = document.getElementById(`nav-${c}`);
-                if (el) el.className = (c === viewCode.toLowerCase()) ? 'nav-tab active px-4 sm:px-6 py-2 font-bold text-sm transition-all' : 'nav-tab px-4 sm:px-6 py-2 font-bold text-sm text-gray-400 transition-all';
+                if (el) {
+                    if (c === viewCode.toLowerCase()) {
+                        el.classList.add('active');
+                    } else {
+                        el.classList.remove('active');
+                    }
+                }
             });
             
             document.getElementById('logo-icon').textContent = config.logo;
@@ -373,7 +286,7 @@
             initChart();
         };
 
-        document.querySelectorAll('.keypad-button').forEach(btn => {
+        document.querySelectorAll('.keypad-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const key = btn.getAttribute('data-key');
                 if (!key) return;
@@ -434,11 +347,14 @@
                     datasets: [{ 
                         label: config.code + '/KRW', 
                         data: dynamicData, 
-                        borderColor: '#2563eb', 
-                        backgroundColor: '#2563eb1a', 
+                        borderColor: '#0E9080', 
+                        backgroundColor: 'rgba(14, 144, 128, 0.08)', 
                         fill: true, 
                         tension: 0.4, 
                         pointRadius: 4, 
+                        pointBackgroundColor: '#0E9080',
+                        pointBorderColor: '#FCFBF6',
+                        pointHoverRadius: 6,
                         borderWidth: 3 
                     }]
                 },
@@ -455,14 +371,21 @@
                     }, 
                     scales: { 
                         y: { 
+                            grid: {
+                                color: '#E0DBCD'
+                            },
                             ticks: { 
-                                font: { size: 10 },
+                                color: '#A09A8C',
+                                font: { family: 'IBM Plex Mono', size: 10 },
                                 callback: (val) => val.toLocaleString()
                             } 
                         }, 
                         x: { 
                             grid: { display: false }, 
-                            ticks: { font: { size: 10 } } 
+                            ticks: { 
+                                color: '#A09A8C',
+                                font: { family: 'Inter', size: 10 } 
+                            } 
                         } 
                     } 
                 }
