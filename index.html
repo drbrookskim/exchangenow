@@ -29,7 +29,7 @@
         <header>
             <div class="header-top">
                 <div class="logo-group">
-                    <div class="logo-badge" id="logo-icon">₱</div>
+                    <div class="logo-badge" id="logo-icon">$</div>
                     <h1>환율 NOW</h1>
                 </div>
                 <div class="status-group">
@@ -39,10 +39,10 @@
             </div>
             
             <nav class="nav-tabs">
-                <button onclick="switchView('PHP')" id="nav-php" class="nav-tab active">페소 (PHP)</button>
-                <button onclick="switchView('USD')" id="nav-usd" class="nav-tab">달러 (USD)</button>
+                <button onclick="switchView('USD')" id="nav-usd" class="nav-tab active">달러 (USD)</button>
                 <button onclick="switchView('THB')" id="nav-thb" class="nav-tab">바트 (THB)</button>
                 <button onclick="switchView('VND')" id="nav-vnd" class="nav-tab">동 (VND 100)</button>
+                <button onclick="switchView('PHP')" id="nav-php" class="nav-tab">페소 (PHP)</button>
             </nav>
         </header>
 
@@ -51,15 +51,15 @@
             <!-- 리포트 섹션 1: 실시간 교차환율 계산기 -->
             <section>
                 <div class="card">
-                    <h2 class="card-title" id="dashboard-title">PHP 환율</h2>
+                    <h2 class="card-title" id="dashboard-title">USD 환율</h2>
 
                     <!-- 통화 리스트 -->
                     <div class="currency-list" id="currency-list">
                         <!-- 타겟 통화 행 -->
                         <div id="row-target" class="currency-row active" data-code="TARGET">
                             <div class="row-left">
-                                <span class="flag" id="target-flag">🇵🇭</span>
-                                <span class="currency-code" id="target-code-display">PHP</span>
+                                <span class="flag" id="target-flag">🇺🇸</span>
+                                <span class="currency-code" id="target-code-display">USD</span>
                                 <span class="input-badge active-label">입력 중</span>
                             </div>
                             <div class="row-right">
@@ -393,7 +393,7 @@
         };
 
         window.onload = () => {
-            switchView('PHP');
+            switchView('USD');
             fetchRealtimeRates();
         };
     </script>
