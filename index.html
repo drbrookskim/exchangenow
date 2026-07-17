@@ -48,10 +48,10 @@
             </nav>
         </header>
 
-        <main class="main-grid">
+        <main class="main-grid" id="main-grid">
             
             <!-- 리포트 섹션 1: 실시간 교차환율 계산기 -->
-            <section>
+            <section class="split-left" id="split-left">
                 <div class="card">
                     <h2 class="card-title" id="dashboard-title">THB 환율</h2>
 
@@ -112,8 +112,11 @@
                 </div>
             </section>
 
+            <!-- 간격 조절용 resizer 바 -->
+            <div class="resizer" id="resizer"></div>
+
             <!-- 리포트 섹션 2: 시장 데이터 분석 -->
-            <section>
+            <section class="split-right" id="split-right">
                 <div class="card">
                     <h2 class="card-title" id="chart-title">시장 동향 분석</h2>
                     <p class="card-subtitle">
@@ -393,6 +396,65 @@
                 }
             });
         };
+
+        // Split-pane resizing logic
+        (() => {
+            const mainGrid = document.getElementById('main-grid');
+            const resizer = document.getElementById('resizer');
+            const leftPane = document.getElementById('split-left');
+            
+            if (!resizer || !leftPane || !mainGrid) return;
+            
+            let isDragging = false;
+            
+            const startResize = (e) => {
+                isDragging = true;
+                resizer.classList.add('active');
+                mainGrid.classList.add('is-dragging');
+                
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+                document.addEventListener('touchmove', resize);
+                document.addEventListener('touchend', stopResize);
+            };
+            
+            const resize = (e) => {
+                if (!isDragging) return;
+                
+                const pageX = e.type.includes('touch') ? e.touches[0].pageX : e.pageX;
+                const containerRect = mainGrid.getBoundingClientRect();
+                const containerWidth = containerRect.width;
+                const relativeX = pageX - containerRect.left;
+                
+                let newPercentage = (relativeX / containerWidth) * 100;
+                
+                const minPercentage = (300 / containerWidth) * 100;
+                const maxPercentage = 65;
+                
+                if (newPercentage < minPercentage) newPercentage = minPercentage;
+                if (newPercentage > maxPercentage) newPercentage = maxPercentage;
+                
+                leftPane.style.width = `${newPercentage}%`;
+                
+                if (currentChart) {
+                    currentChart.resize();
+                }
+            };
+            
+            const stopResize = () => {
+                isDragging = false;
+                resizer.classList.remove('active');
+                mainGrid.classList.remove('is-dragging');
+                
+                document.removeEventListener('mousemove', resize);
+                document.removeEventListener('mouseup', stopResize);
+                document.removeEventListener('touchmove', resize);
+                document.removeEventListener('touchend', stopResize);
+            };
+            
+            resizer.addEventListener('mousedown', startResize);
+            resizer.addEventListener('touchstart', startResize, { passive: true });
+        })();
 
         window.onload = () => {
             switchView('THB');
