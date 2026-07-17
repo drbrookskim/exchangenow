@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>환율 NOW - 인터랙티브 리포트</title>
     
-    <!-- iOS PWA Meta Tags -->
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/263/263142.png">
+    <!-- PWA Manifest & Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0E9080">
+    <link rel="apple-touch-icon" href="./icon-512.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="환율 NOW">
@@ -395,6 +397,13 @@
         window.onload = () => {
             switchView('USD');
             fetchRealtimeRates();
+
+            // Register Service Worker for PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registered'))
+                    .catch(err => console.error('Service Worker Registration Failed', err));
+            }
         };
     </script>
 </body>

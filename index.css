@@ -49,6 +49,7 @@ body {
   color: var(--color-ink);
   min-height: 100vh;
   padding: 2.5rem 1rem;
+  padding: calc(2.5rem + env(safe-area-inset-top)) 1rem calc(2.5rem + env(safe-area-inset-bottom)) 1rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

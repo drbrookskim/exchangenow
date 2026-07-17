@@ -1,0 +1,18 @@
+{
+  "name": "환율 NOW",
+  "short_name": "환율 NOW",
+  "description": "실시간 환율 계산 및 트렌드 분석 리포트",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#E9E6DD",
+  "theme_color": "#0E9080",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
