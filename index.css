@@ -509,27 +509,27 @@ footer p {
    ========================================================================== */
 @media (max-width: 599px) {
   body {
-    padding: 0.4rem 0.6rem;
-    padding: calc(0.4rem + env(safe-area-inset-top)) 0.6rem calc(0.4rem + env(safe-area-inset-bottom)) 0.6rem;
+    padding: 0.5rem 0.75rem;
+    padding: calc(0.5rem + env(safe-area-inset-top)) 0.75rem calc(0.5rem + env(safe-area-inset-bottom)) 0.75rem;
   }
 
   /* Header compact */
   header {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
   }
 
   .header-top {
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.4rem;
   }
 
   .logo-badge {
-    width: 1.6rem;
-    height: 1.6rem;
-    font-size: 0.95rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    font-size: 1rem;
   }
 
   h1 {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 
   .api-status {
@@ -543,24 +543,37 @@ footer p {
 
   /* Nav tabs compact */
   .nav-tab {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.65rem;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.75rem;
   }
 
   /* Main grid: separate calculator card and chart section with clear vertical gap */
   .main-grid {
-    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
   }
 
-  /* Calculator Card: comfortable sizing that fits inside first screen */
-  .card {
-    padding: 0.75rem 0.85rem;
-    border-radius: 12px;
+  /* Section 1 (Calculator): fills the first viewport screen cleanly */
+  .split-left {
+    min-height: calc(100dvh - 6.5rem);
+    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 5rem);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .split-left .card {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+    border-radius: 14px;
   }
 
   .card-title {
-    font-size: 0.9rem;
-    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
   }
 
   .card-subtitle {
@@ -570,59 +583,71 @@ footer p {
 
   /* Currency rows */
   .currency-list {
-    gap: 0.35rem;
-    margin-bottom: 0.5rem;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
   }
 
   .currency-row {
-    padding: 0.45rem 0.65rem;
-    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
   }
 
   .flag {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
 
   .currency-code {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   .input-badge {
     font-size: 0.55rem;
-    padding: 0.08rem 0.3rem;
+    padding: 0.1rem 0.35rem;
   }
 
   .expr-display {
     font-size: 0.65rem;
-    min-height: 0.85rem;
+    min-height: 0.9rem;
   }
 
   .val-display {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
   }
 
-  /* Keypad: comfortable button sizes */
+  /* Keypad: comfortable button sizes for tapping */
   .keypad {
-    gap: 0.3rem;
+    gap: 0.35rem;
   }
 
   .keypad-btn {
-    font-size: 1rem;
-    padding: 0.55rem 0;
-    border-radius: 8px;
+    font-size: 1.1rem;
+    padding: 0.7rem 0;
+    border-radius: 10px;
   }
 
   .keypad-btn.action-equals {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
   }
 
-  /* Chart section (below the fold for scroll-down) */
+  /* Section 2 (Trend Analysis): sits below the fold on screen 2 */
+  .split-right {
+    min-height: calc(100dvh - 4rem);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .split-right .card {
+    flex-grow: 1;
+    padding: 1rem;
+    border-radius: 14px;
+  }
+
   .chart-wrapper {
-    margin: 0.5rem 0;
+    margin: 0.75rem 0;
   }
 
   .chart-container {
-    height: 200px;
+    height: 220px;
   }
 
   /* Stats compact */
@@ -631,21 +656,21 @@ footer p {
   }
 
   .stat-box {
-    padding: 0.5rem;
-    border-radius: 8px;
+    padding: 0.6rem;
+    border-radius: 10px;
   }
 
   .stat-label {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
   }
 
   .stat-val {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
   /* Footer compact */
   footer {
-    margin-top: 1.5rem;
+    margin-top: 2rem;
     font-size: 0.65rem;
   }
 }
