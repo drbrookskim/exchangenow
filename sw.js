@@ -1,4 +1,4 @@
-const CACHE_NAME = "exchange-now-v5";
+const CACHE_NAME = "exchange-now-v6";
 const ASSETS = [
   "./",
   "./index.html",
