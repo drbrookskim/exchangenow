@@ -554,10 +554,10 @@ footer p {
     gap: 2rem;
   }
 
-  /* Section 1 (Calculator): fills the first viewport screen cleanly */
+  /* Section 1 (Calculator): fills the first viewport screen cleanly and fully */
   .split-left {
     min-height: calc(100dvh - 6.5rem);
-    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 5rem);
+    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4.5rem);
     display: flex;
     flex-direction: column;
   }
@@ -566,67 +566,74 @@ footer p {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     padding: 1rem;
-    border-radius: 14px;
+    border-radius: 16px;
   }
 
-  .card-title {
-    font-size: 0.95rem;
-    margin-bottom: 0.5rem;
+  .split-left .card-title {
+    font-size: 1rem;
+    margin-bottom: 0.6rem;
   }
 
-  .card-subtitle {
+  .split-left .card-subtitle {
     font-size: 0.75rem;
     margin-bottom: 0.6rem;
   }
 
   /* Currency rows */
-  .currency-list {
-    gap: 0.4rem;
-    margin-bottom: 0.6rem;
+  .split-left .currency-list {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
   }
 
-  .currency-row {
-    padding: 0.6rem 0.75rem;
-    border-radius: 10px;
+  .split-left .currency-row {
+    padding: 0.65rem 0.85rem;
+    border-radius: 12px;
   }
 
-  .flag {
-    font-size: 1.3rem;
+  .split-left .flag {
+    font-size: 1.35rem;
   }
 
-  .currency-code {
-    font-size: 0.85rem;
+  .split-left .currency-code {
+    font-size: 0.9rem;
   }
 
-  .input-badge {
+  .split-left .input-badge {
     font-size: 0.55rem;
     padding: 0.1rem 0.35rem;
   }
 
-  .expr-display {
+  .split-left .expr-display {
     font-size: 0.65rem;
     min-height: 0.9rem;
   }
 
-  .val-display {
-    font-size: 1.1rem;
+  .split-left .val-display {
+    font-size: 1.25rem;
   }
 
-  /* Keypad: comfortable button sizes for tapping */
-  .keypad {
-    gap: 0.35rem;
+  /* Keypad: expands vertically to fill all remaining height in card */
+  .split-left .keypad {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 0.4rem;
   }
 
-  .keypad-btn {
-    font-size: 1.1rem;
-    padding: 0.7rem 0;
+  .split-left .keypad-btn {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 1.25rem;
     border-radius: 10px;
   }
 
-  .keypad-btn.action-equals {
-    font-size: 1.25rem;
+  .split-left .keypad-btn.action-equals {
+    font-size: 1.4rem;
   }
 
   /* Section 2 (Trend Analysis): sits below the fold on screen 2 */
