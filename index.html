@@ -22,7 +22,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="index.css?v=5">
+    <link rel="stylesheet" href="index.css?v=6">
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('exchange-now-theme');
+            var theme = savedTheme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 </head>
 <body>
 
@@ -31,18 +38,54 @@
         <header>
             <div class="header-top">
                 <div class="logo-group">
-                    <div class="logo-badge" id="logo-icon">฿</div>
+                    <div class="logo-badge" id="logo-icon">$</div>
                     <h1>환율 NOW</h1>
                 </div>
-                <div class="status-group">
-                    <div class="api-status" id="api-status">실시간 데이터 연결 중...</div>
-                    <div class="last-updated" id="last-updated">최종 확인: -</div>
+                <div class="header-right">
+                    <div class="status-group">
+                        <div class="api-status" id="api-status">실시간 데이터 연결 중...</div>
+                        <div class="last-updated" id="last-updated">최종 확인: -</div>
+                    </div>
+                    <div class="header-actions">
+                        <button type="button" class="icon-btn" id="cat-modal-btn" aria-label="고양이 종류 변경" title="고양이 종류 변경">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"></path>
+                                <path d="M8 14v.5"></path>
+                                <path d="M16 14v.5"></path>
+                                <path d="M11.25 16.25h1.5L12 17l-.75-.75Z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" class="icon-btn" id="theme-toggle-btn" aria-label="테마 변경" title="다크/라이트 테마 변경">
+                            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <path d="M12 2v2"></path>
+                                <path d="M12 20v2"></path>
+                                <path d="m4.93 4.93 1.41 1.41"></path>
+                                <path d="m17.66 17.66 1.41 1.41"></path>
+                                <path d="M2 12h2"></path>
+                                <path d="M20 12h2"></path>
+                                <path d="m6.34 17.66-1.41 1.41"></path>
+                                <path d="m19.07 4.93-1.41 1.41"></path>
+                            </svg>
+                            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" class="icon-btn" id="order-modal-btn" aria-label="통화 표시 순서 변경" title="통화 표시 순서 변경">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="m3 16 4 4 4-4"></path>
+                                <path d="M7 20V4"></path>
+                                <path d="m21 8-4-4-4 4"></path>
+                                <path d="M17 4v16"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <nav class="nav-tabs">
-                <button onclick="switchView('THB')" id="nav-thb" class="nav-tab active">바트 (THB)</button>
-                <button onclick="switchView('USD')" id="nav-usd" class="nav-tab">달러 (USD)</button>
+            <nav class="nav-tabs" id="nav-tabs">
+                <button onclick="switchView('USD')" id="nav-usd" class="nav-tab active">달러 (USD)</button>
+                <button onclick="switchView('THB')" id="nav-thb" class="nav-tab">바트 (THB)</button>
                 <button onclick="switchView('VND')" id="nav-vnd" class="nav-tab">동 (VND 100)</button>
                 <button onclick="switchView('PHP')" id="nav-php" class="nav-tab">페소 (PHP)</button>
             </nav>
@@ -53,7 +96,83 @@
             <!-- 리포트 섹션 1: 실시간 교차환율 계산기 -->
             <section class="split-left" id="split-left">
                 <div class="card">
-                    <h2 class="card-title" id="dashboard-title">THB 환율</h2>
+                    <div class="calc-card-header">
+                        <h2 class="card-title" id="dashboard-title">USD 환율</h2>
+                        <div class="cat-playground" id="cat-playground" aria-hidden="true">
+                            <button type="button" class="cat-actor" id="cat-actor" data-cat-breed="cheese" tabindex="-1" title="야옹!">
+                                <svg class="cat-svg" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Tail -->
+                                    <path class="cat-tail" d="M12 28C7 27 5 21 8 16" stroke="var(--color-cat-fur)" stroke-width="3.6" stroke-linecap="round"/>
+                                    <!-- Back legs -->
+                                    <rect class="cat-leg-back" x="14" y="29" width="4" height="7" rx="2" fill="var(--color-cat-shadow)"/>
+                                    <rect class="cat-leg-front" x="28" y="29" width="4" height="7" rx="2" fill="var(--color-cat-fur)"/>
+                                    <!-- Body -->
+                                    <ellipse cx="22" cy="26" rx="10" ry="7.5" fill="var(--color-cat-fur)"/>
+                                    <!-- Tabby Stripes (Cheese / Mackerel) -->
+                                    <g class="cat-stripes" stroke="var(--color-cat-stripe)" stroke-width="1.4" stroke-linecap="round">
+                                        <path d="M16.5 20.5L17.5 23.5"/>
+                                        <path d="M20.5 19.3L21 22.8"/>
+                                        <path d="M24.5 20L24.5 23"/>
+                                    </g>
+                                    <!-- Calico Patches -->
+                                    <g class="cat-calico-patch">
+                                        <ellipse cx="17.5" cy="23" rx="4.2" ry="3.2" fill="#F59E0B"/>
+                                        <ellipse cx="23.5" cy="24.5" rx="3.4" ry="2.6" fill="#292524"/>
+                                    </g>
+                                    <!-- Belly patch -->
+                                    <ellipse cx="23" cy="27.5" rx="5.5" ry="4" fill="var(--color-cat-belly)"/>
+                                    <!-- Front paws -->
+                                    <rect class="cat-leg-front" x="17" y="30" width="4" height="7" rx="2" fill="var(--color-cat-fur)"/>
+                                    <rect class="cat-leg-back" x="25" y="30" width="4" height="7" rx="2" fill="var(--color-cat-shadow)"/>
+                                    <!-- Tuxedo white socks -->
+                                    <g class="cat-tux-patch">
+                                        <rect class="cat-leg-front" x="17" y="34" width="4" height="3" rx="1.5" fill="#F8FAFC"/>
+                                        <rect class="cat-leg-front" x="28" y="33" width="4" height="3" rx="1.5" fill="#F8FAFC"/>
+                                    </g>
+                                    <!-- Collar -->
+                                    <path d="M25 20.5C28 21.5 31 21 33 19.5" stroke="var(--color-accent)" stroke-width="2.4" stroke-linecap="round"/>
+                                    <circle cx="32.5" cy="21.8" r="1.6" fill="#F59E0B"/>
+                                    <!-- Head -->
+                                    <g class="cat-head">
+                                        <circle cx="31" cy="15" r="8.5" fill="var(--color-cat-fur)"/>
+                                        <!-- Ears -->
+                                        <path class="cat-ear-left" d="M24 10L25 3L30 8Z" fill="var(--color-cat-fur)" stroke="var(--color-cat-fur)" stroke-linejoin="round"/>
+                                        <path class="cat-ear-left" d="M25.3 9L25.9 4.8L28.8 7.8Z" fill="#FDA4AF"/>
+                                        <path class="cat-ear-right" d="M33 8L37 3L38 10Z" fill="var(--color-cat-fur)" stroke="var(--color-cat-fur)" stroke-linejoin="round"/>
+                                        <path class="cat-ear-right" d="M33.8 7.8L36.3 4.8L37 9Z" fill="#FDA4AF"/>
+                                        <!-- Calico Head Patches -->
+                                        <g class="cat-calico-patch">
+                                            <path d="M24 10L25 3L30 8Z" fill="#F59E0B" stroke="#F59E0B" stroke-linejoin="round"/>
+                                            <circle cx="27" cy="11.5" r="3.4" fill="#F59E0B"/>
+                                            <path d="M33 8L37 3L38 10Z" fill="#292524" stroke="#292524" stroke-linejoin="round"/>
+                                            <circle cx="35.5" cy="12" r="3.1" fill="#292524"/>
+                                        </g>
+                                        <!-- Tabby Forehead Stripes -->
+                                        <g class="cat-stripes" stroke="var(--color-cat-stripe)" stroke-width="1.2" stroke-linecap="round">
+                                            <path d="M29.5 8.5V11"/>
+                                            <path d="M31.5 8V11.2"/>
+                                            <path d="M33.5 8.5V11"/>
+                                        </g>
+                                        <!-- Tuxedo White Muzzle -->
+                                        <ellipse class="cat-tux-patch" cx="31.5" cy="17.8" rx="4.5" ry="3.2" fill="#F8FAFC"/>
+                                        <!-- Cheeks -->
+                                        <circle cx="27.2" cy="16.8" r="1.4" fill="#FDA4AF" opacity="0.7"/>
+                                        <circle cx="35.8" cy="16.8" r="1.4" fill="#FDA4AF" opacity="0.7"/>
+                                        <!-- Eyes -->
+                                        <g class="cat-eyes">
+                                            <circle cx="28.5" cy="14.2" r="1.25" fill="var(--color-cat-eye)"/>
+                                            <circle cx="34.5" cy="14.2" r="1.25" fill="var(--color-cat-eye)"/>
+                                            <circle cx="28.9" cy="13.8" r="0.4" fill="#FFFFFF"/>
+                                            <circle cx="34.9" cy="13.8" r="0.4" fill="#FFFFFF"/>
+                                        </g>
+                                        <!-- Nose & Mouth -->
+                                        <polygon points="31.5,16 30.6,17 32.4,17" fill="#FB7185"/>
+                                        <path d="M30 17.7C30.6 18.4 31.3 18.2 31.5 17.6C31.7 18.2 32.4 18.4 33 17.7" stroke="var(--color-cat-mouth)" stroke-width="0.9" stroke-linecap="round"/>
+                                    </g>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- 통화 리스트 -->
                     <div class="currency-list" id="currency-list">
@@ -149,26 +268,115 @@
         </footer>
     </div>
 
+    <!-- 통화 표시 순서 변경 화면 (모달) -->
+    <div class="modal-overlay hidden" id="order-modal" role="dialog" aria-modal="true" aria-labelledby="order-modal-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="order-modal-title">통화 표시 순서 변경</h2>
+                    <p class="modal-subtitle">첫 번째 통화가 기본 화면으로 열립니다. 드래그하거나 버튼으로 순서를 바꾸세요.</p>
+                </div>
+                <button type="button" class="icon-btn modal-close-btn" id="order-modal-close" aria-label="닫기" title="닫기">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 6 6 18"></path>
+                        <path d="m6 6 12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <ul class="order-list" id="order-list"></ul>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="order-reset-btn">기본 순서</button>
+                <div class="modal-footer-right">
+                    <button type="button" class="btn-secondary" id="order-cancel-btn">취소</button>
+                    <button type="button" class="btn-primary" id="order-save-btn">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 고양이 종류 선택 화면 (모달) -->
+    <div class="modal-overlay hidden" id="cat-modal" role="dialog" aria-modal="true" aria-labelledby="cat-modal-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="cat-modal-title">고양이 종류 선택</h2>
+                    <p class="modal-subtitle">함께 놀고 싶은 고양이 친구를 골라보세요.</p>
+                </div>
+                <button type="button" class="icon-btn modal-close-btn" id="cat-modal-close" aria-label="닫기" title="닫기">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 6 6 18"></path>
+                        <path d="m6 6 12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="cat-breed-grid" id="cat-breed-grid"></div>
+        </div>
+    </div>
+
     <script>
+        // Constants & Storage Keys
+        const DEFAULT_CURRENCY_ORDER = ['USD', 'THB', 'VND', 'PHP'];
+        const ORDER_STORAGE_KEY = 'exchange-now-currency-order';
+        const THEME_STORAGE_KEY = 'exchange-now-theme';
+
+        const loadCurrencyOrder = () => {
+            try {
+                const raw = localStorage.getItem(ORDER_STORAGE_KEY);
+                if (!raw) return [...DEFAULT_CURRENCY_ORDER];
+                const parsed = JSON.parse(raw);
+                if (
+                    Array.isArray(parsed) &&
+                    parsed.length === DEFAULT_CURRENCY_ORDER.length &&
+                    DEFAULT_CURRENCY_ORDER.every(code => parsed.includes(code))
+                ) {
+                    return parsed;
+                }
+            } catch (e) {
+                // ignore malformed storage
+            }
+            return [...DEFAULT_CURRENCY_ORDER];
+        };
+
         // State Management
         const state = {
-            view: 'PHP', 
-            activeCurrency: 'PHP', 
-            inputValue: '0', 
+            currencyOrder: loadCurrencyOrder(),
+            view: 'USD',
+            activeCurrency: 'USD',
+            inputValue: '0',
             rates: {
                 PHP: 24.50,
                 USD: 1445.00,
                 THB: 39.80,
-                VND: 5.65 
+                VND: 5.65
             },
             apiActive: false
         };
+        state.view = state.currencyOrder[0];
+        state.activeCurrency = state.currencyOrder[0];
 
         const viewConfig = {
-            PHP: { flag: '🇵🇭', code: 'PHP', logo: '₱', baseUnit: 1, data: [24.4, 24.5, 24.6, 24.5, 24.5, 24.6, 24.5] },
-            USD: { flag: '🇺🇸', code: 'USD', logo: '$', baseUnit: 1, data: [1440, 1442, 1448, 1445, 1444, 1446, 1445] },
-            THB: { flag: '🇹🇭', code: 'THB', logo: '฿', baseUnit: 1, data: [39.6, 39.7, 39.9, 39.8, 39.7, 39.9, 39.8] },
-            VND: { flag: '🇻🇳', code: 'VND 100', logo: '₫', baseUnit: 100, data: [5.45, 5.55, 5.68, 5.60, 5.58, 5.63, 5.65] }
+            USD: { flag: '🇺🇸', code: 'USD', tabLabel: '달러 (USD)', name: '미국 달러', logo: '$', baseUnit: 1, data: [1440, 1442, 1448, 1445, 1444, 1446, 1445] },
+            THB: { flag: '🇹🇭', code: 'THB', tabLabel: '바트 (THB)', name: '태국 바트', logo: '฿', baseUnit: 1, data: [39.6, 39.7, 39.9, 39.8, 39.7, 39.9, 39.8] },
+            VND: { flag: '🇻🇳', code: 'VND 100', tabLabel: '동 (VND 100)', name: '베트남 동', logo: '₫', baseUnit: 100, data: [5.45, 5.55, 5.68, 5.60, 5.58, 5.63, 5.65] },
+            PHP: { flag: '🇵🇭', code: 'PHP', tabLabel: '페소 (PHP)', name: '필리핀 페소', logo: '₱', baseUnit: 1, data: [24.4, 24.5, 24.6, 24.5, 24.5, 24.6, 24.5] }
+        };
+
+        const renderNavTabs = () => {
+            const navTabs = document.getElementById('nav-tabs');
+            if (!navTabs) return;
+            navTabs.innerHTML = '';
+            state.currencyOrder.forEach((code) => {
+                const cfg = viewConfig[code];
+                const btn = document.createElement('button');
+                btn.id = `nav-${code.toLowerCase()}`;
+                btn.className = `nav-tab${code === state.view ? ' active' : ''}`;
+                btn.textContent = cfg.tabLabel;
+                btn.addEventListener('click', () => switchView(code));
+                navTabs.appendChild(btn);
+            });
         };
 
         const displays = {
@@ -342,6 +550,13 @@
             const currentRate = state.rates[state.view];
             const dynamicData = config.data.map((v, i) => (currentRate * (0.985 + (Math.random() * 0.03))));
 
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const accentColor = isDark ? '#14B8A6' : '#0E9080';
+            const accentBg = isDark ? 'rgba(20, 184, 166, 0.14)' : 'rgba(14, 144, 128, 0.08)';
+            const pointBorder = isDark ? '#1C1E1D' : '#FCFBF6';
+            const gridColor = isDark ? '#2E3230' : '#E0DBCD';
+            const tickColor = isDark ? '#989386' : '#A09A8C';
+
             document.getElementById('stat-high').textContent = Math.max(...dynamicData).toLocaleString(undefined, {maximumFractionDigits: 2}) + ' ₩';
             document.getElementById('stat-low').textContent = Math.min(...dynamicData).toLocaleString(undefined, {maximumFractionDigits: 2}) + ' ₩';
             
@@ -352,13 +567,13 @@
                     datasets: [{ 
                         label: config.code + '/KRW', 
                         data: dynamicData, 
-                        borderColor: '#0E9080', 
-                        backgroundColor: 'rgba(14, 144, 128, 0.08)', 
+                        borderColor: accentColor, 
+                        backgroundColor: accentBg, 
                         fill: true, 
                         tension: 0.4, 
                         pointRadius: 4, 
-                        pointBackgroundColor: '#0E9080',
-                        pointBorderColor: '#FCFBF6',
+                        pointBackgroundColor: accentColor,
+                        pointBorderColor: pointBorder,
                         pointHoverRadius: 6,
                         borderWidth: 3 
                     }]
@@ -377,10 +592,10 @@
                     scales: { 
                         y: { 
                             grid: {
-                                color: '#E0DBCD'
+                                color: gridColor
                             },
                             ticks: { 
-                                color: '#A09A8C',
+                                color: tickColor,
                                 font: { family: 'IBM Plex Mono', size: 10 },
                                 callback: (val) => val.toLocaleString()
                             } 
@@ -388,7 +603,7 @@
                         x: { 
                             grid: { display: false }, 
                             ticks: { 
-                                color: '#A09A8C',
+                                color: tickColor,
                                 font: { family: 'Inter', size: 10 } 
                             } 
                         } 
@@ -396,6 +611,163 @@
                 }
             });
         };
+
+        // Theme Management
+        const getCurrentTheme = () => {
+            return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        };
+
+        const applyTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem(THEME_STORAGE_KEY, theme);
+            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            if (metaThemeColor) {
+                metaThemeColor.setAttribute('content', theme === 'dark' ? '#121413' : '#0E9080');
+            }
+            const toggleBtn = document.getElementById('theme-toggle-btn');
+            if (toggleBtn) {
+                toggleBtn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+                toggleBtn.setAttribute('title', theme === 'dark' ? '라이트 테마로 변경' : '다크 테마로 변경');
+            }
+        };
+
+        document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
+            const nextTheme = getCurrentTheme() === 'dark' ? 'light' : 'dark';
+            applyTheme(nextTheme);
+            initChart();
+        });
+
+        // Currency Order Modal Management
+        (() => {
+            const modal = document.getElementById('order-modal');
+            const openBtn = document.getElementById('order-modal-btn');
+            const closeBtn = document.getElementById('order-modal-close');
+            const cancelBtn = document.getElementById('order-cancel-btn');
+            const saveBtn = document.getElementById('order-save-btn');
+            const resetBtn = document.getElementById('order-reset-btn');
+            const orderList = document.getElementById('order-list');
+
+            if (!modal || !openBtn || !orderList) return;
+
+            let draftOrder = [...state.currencyOrder];
+            let draggedIndex = null;
+
+            const renderOrderList = () => {
+                orderList.innerHTML = '';
+                draftOrder.forEach((code, index) => {
+                    const cfg = viewConfig[code];
+                    const li = document.createElement('li');
+                    li.className = 'order-item';
+                    li.draggable = true;
+                    li.dataset.index = index;
+
+                    li.innerHTML = `
+                        <div class="order-item-left">
+                            <span class="drag-handle" aria-hidden="true">⋮⋮</span>
+                            <span class="order-rank">${index + 1}</span>
+                            <span class="order-flag">${cfg.flag}</span>
+                            <div class="order-info">
+                                <span class="order-name">${cfg.name}</span>
+                                <span class="order-code">${cfg.code}</span>
+                            </div>
+                        </div>
+                        <div class="order-item-actions">
+                            <button type="button" class="order-move-btn" data-dir="up" aria-label="${cfg.name} 위로 이동" ${index === 0 ? 'disabled' : ''}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                            </button>
+                            <button type="button" class="order-move-btn" data-dir="down" aria-label="${cfg.name} 아래로 이동" ${index === draftOrder.length - 1 ? 'disabled' : ''}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                            </button>
+                        </div>
+                    `;
+
+                    li.querySelectorAll('.order-move-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const dir = btn.getAttribute('data-dir');
+                            const targetIdx = dir === 'up' ? index - 1 : index + 1;
+                            if (targetIdx < 0 || targetIdx >= draftOrder.length) return;
+                            const [moved] = draftOrder.splice(index, 1);
+                            draftOrder.splice(targetIdx, 0, moved);
+                            renderOrderList();
+                        });
+                    });
+
+                    li.addEventListener('dragstart', (e) => {
+                        draggedIndex = index;
+                        li.classList.add('dragging');
+                        if (e.dataTransfer) {
+                            e.dataTransfer.effectAllowed = 'move';
+                            e.dataTransfer.setData('text/plain', String(index));
+                        }
+                    });
+
+                    li.addEventListener('dragend', () => {
+                        draggedIndex = null;
+                        li.classList.remove('dragging');
+                        orderList.querySelectorAll('.order-item').forEach(item => item.classList.remove('drag-over'));
+                    });
+
+                    li.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        if (draggedIndex === null || draggedIndex === index) return;
+                        li.classList.add('drag-over');
+                    });
+
+                    li.addEventListener('dragleave', () => {
+                        li.classList.remove('drag-over');
+                    });
+
+                    li.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        li.classList.remove('drag-over');
+                        if (draggedIndex === null || draggedIndex === index) return;
+                        const [moved] = draftOrder.splice(draggedIndex, 1);
+                        draftOrder.splice(index, 0, moved);
+                        renderOrderList();
+                    });
+
+                    orderList.appendChild(li);
+                });
+            };
+
+            const openModal = () => {
+                draftOrder = [...state.currencyOrder];
+                renderOrderList();
+                modal.classList.remove('hidden');
+                document.body.classList.add('modal-open');
+            };
+
+            const closeModal = () => {
+                modal.classList.add('hidden');
+                document.body.classList.remove('modal-open');
+            };
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn?.addEventListener('click', closeModal);
+            cancelBtn?.addEventListener('click', closeModal);
+
+            resetBtn?.addEventListener('click', () => {
+                draftOrder = [...DEFAULT_CURRENCY_ORDER];
+                renderOrderList();
+            });
+
+            saveBtn?.addEventListener('click', () => {
+                state.currencyOrder = [...draftOrder];
+                localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(state.currencyOrder));
+                renderNavTabs();
+                closeModal();
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            });
+        })();
 
         // Split-pane resizing logic
         (() => {
@@ -456,8 +828,587 @@
             resizer.addEventListener('touchstart', startResize, { passive: true });
         })();
 
+        // Playful running, draggable & curve-sliding cat controller
+        (() => {
+            const catBtn = document.getElementById('cat-actor');
+            const playground = document.getElementById('cat-playground');
+            if (!catBtn || !playground) return;
+
+            const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // Move cat actor to document.body so it can roam across buttons, boxes, and chart curves
+            document.body.appendChild(catBtn);
+            catBtn.classList.add('cat-actor--floating');
+
+            const catState = {
+                mode: 'roam', // 'roam' | 'grabbed' | 'falling' | 'curve'
+                host: playground,
+                x: 0,
+                y: 0,
+                vx: 0,
+                vy: 0,
+                localX: 0,
+                targetLocalX: 0,
+                facing: 1,
+                tiltDeg: 0,
+                isDragging: false,
+                dragMoved: false,
+                dragStartX: 0,
+                dragStartY: 0,
+                grabOffsetX: 22,
+                grabOffsetY: 18,
+                highlightedEl: null,
+                nextWanderAt: performance.now() + 2600,
+                dustCooldown: 0,
+                zzzCooldown: 0,
+                idleBehavior: null,
+                lastIdleBehavior: null,
+                nextIdleActionAt: performance.now() + 500,
+                idleActionUntil: 0,
+                lastTime: performance.now(),
+                curveProgress: 0.1,
+                curveDir: 1,
+                curveSpeed: 0.16,
+                jumpY: 0,
+                jumpVy: 0,
+                curveWait: 0,
+                curvePhase: 'air' // 'crouch' | 'air' | 'slide'
+            };
+
+            const IDLE_BEHAVIORS = ['loaf', 'stretch', 'groom', 'nap'];
+
+            const clearCurvePose = () => {
+                catBtn.classList.remove('is-crouch', 'is-jumping-up', 'is-jumping-down', 'is-landing');
+            };
+
+            const clearIdleBehavior = () => {
+                if (catState.idleBehavior) {
+                    catBtn.classList.remove(`is-${catState.idleBehavior}`);
+                    catState.idleBehavior = null;
+                }
+            };
+
+            const getCatSize = () => ({
+                w: catBtn.offsetWidth || 44,
+                h: catBtn.offsetHeight || 36
+            });
+
+            const spawnParticle = (className, pageX, pageY, text = '') => {
+                const el = document.createElement('span');
+                el.className = className;
+                if (text) el.textContent = text;
+                el.style.left = `${pageX}px`;
+                el.style.top = `${pageY}px`;
+                document.body.appendChild(el);
+                const life = (className === 'cat-heart' || className === 'cat-zzz') ? 950 : 450;
+                setTimeout(() => el.remove(), life);
+            };
+
+            const clearHighlight = () => {
+                if (catState.highlightedEl) {
+                    catState.highlightedEl.classList.remove('cat-drop-highlight');
+                    catState.highlightedEl = null;
+                }
+            };
+
+            const findDropTarget = (clientX, clientY) => {
+                catBtn.style.pointerEvents = 'none';
+                const el = document.elementFromPoint(clientX, clientY);
+                catBtn.style.pointerEvents = '';
+                if (!el) return null;
+
+                return el.closest(
+                    '#cat-playground, #trendsChart, .keypad-btn, .currency-row, .stat-box, .nav-tab, .icon-btn, .card'
+                );
+            };
+
+            const getHostBounds = (host) => {
+                const rect = host.getBoundingClientRect();
+                const { w, h } = getCatSize();
+                const pageLeft = rect.left + window.scrollX;
+                const pageTop = rect.top + window.scrollY;
+                const padX = host === playground ? 0 : 6;
+                const minLocalX = padX;
+                const maxLocalX = Math.max(padX, rect.width - w - padX);
+                // Sit inside the bottom edge of buttons/boxes, or bottom of playground
+                const restY = pageTop + rect.height - h - (host === playground ? 0 : 4);
+                return { rect, pageLeft, pageTop, minLocalX, maxLocalX, restY };
+            };
+
+            // Sample smooth curve y & slope from Chart.js dataset
+            const getChartCurveAt = (normX) => {
+                if (!currentChart) return null;
+                const canvas = document.getElementById('trendsChart');
+                if (!canvas) return null;
+                const meta = currentChart.getDatasetMeta(0);
+                if (!meta || !meta.data || meta.data.length < 2) return null;
+
+                const pts = meta.data;
+                const rect = canvas.getBoundingClientRect();
+                const pageLeft = rect.left + window.scrollX;
+                const pageTop = rect.top + window.scrollY;
+
+                const tTotal = Math.max(0, Math.min(1, normX)) * (pts.length - 1);
+                const i = Math.min(pts.length - 2, Math.floor(tTotal));
+                const localT = tTotal - i;
+
+                const p0 = pts[Math.max(0, i - 1)];
+                const p1 = pts[i];
+                const p2 = pts[i + 1];
+                const p3 = pts[Math.min(pts.length - 1, i + 2)];
+
+                // Catmull-Rom spline for smooth curve matching Chart.js tension
+                const t2 = localT * localT;
+                const t3 = t2 * localT;
+                const interp = (a, b, c, d) => 0.5 * (
+                    (2 * b) +
+                    (-a + c) * localT +
+                    (2 * a - 5 * b + 4 * c - d) * t2 +
+                    (-a + 3 * b - 3 * c + d) * t3
+                );
+                const deriv = (a, b, c, d) => 0.5 * (
+                    (-a + c) +
+                    2 * (2 * a - 5 * b + 4 * c - d) * localT +
+                    3 * (-a + 3 * b - 3 * c + d) * t2
+                );
+
+                const cx = interp(p0.x, p1.x, p2.x, p3.x);
+                const cy = interp(p0.y, p1.y, p2.y, p3.y);
+                const dx = deriv(p0.x, p1.x, p2.x, p3.x) || 1;
+                const dy = deriv(p0.y, p1.y, p2.y, p3.y);
+
+                return {
+                    pageX: pageLeft + cx,
+                    pageY: pageTop + cy,
+                    slope: dy / dx,
+                    minX: pageLeft + pts[0].x,
+                    maxX: pageLeft + pts[pts.length - 1].x,
+                    bottomY: pageTop + rect.height
+                };
+            };
+
+            const snapToHost = (host, clientX) => {
+                const { w, h } = getCatSize();
+                if (host.id === 'trendsChart' && currentChart) {
+                    const rect = host.getBoundingClientRect();
+                    const norm = Math.max(0, Math.min(1, (clientX - rect.left) / Math.max(1, rect.width)));
+                    catState.host = host;
+                    catState.mode = 'curve';
+                    catState.curveProgress = norm;
+                    catState.curveDir = norm > 0.5 ? -1 : 1;
+                    catState.curveSpeed = 0.24;
+                    catState.jumpY = -18;
+                    catState.jumpVy = -80;
+                    catState.curvePhase = 'air';
+                    catState.curveWait = 0;
+                    return;
+                }
+
+                const validHost = host.matches('#cat-playground, .keypad-btn, .currency-row, .stat-box, .nav-tab, .icon-btn, .card')
+                    ? host
+                    : playground;
+
+                const bounds = getHostBounds(validHost);
+                const dropLocalX = (clientX + window.scrollX) - bounds.pageLeft - w / 2;
+                const clampedX = Math.max(bounds.minLocalX, Math.min(bounds.maxLocalX, dropLocalX));
+
+                catState.host = validHost;
+                catState.localX = clampedX;
+                catState.targetLocalX = clampedX;
+                catState.mode = 'falling';
+                catState.vy = 40;
+                catState.tiltDeg = 0;
+                catState.nextWanderAt = performance.now() + 1800;
+
+                if (validHost.classList.contains('keypad-btn')) {
+                    validHost.classList.add('cat-btn-bounce');
+                    setTimeout(() => validHost.classList.remove('cat-btn-bounce'), 300);
+                }
+            };
+
+            // Initialize position at playground
+            const initBounds = getHostBounds(playground);
+            catState.x = initBounds.pageLeft;
+            catState.y = initBounds.restY;
+
+            // Pointer drag & drop on the cat itself
+            catBtn.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const { w, h } = getCatSize();
+                catState.isDragging = true;
+                catState.dragMoved = false;
+                catState.dragStartX = e.clientX;
+                catState.dragStartY = e.clientY;
+                catState.grabOffsetX = w / 2;
+                catState.grabOffsetY = h / 2;
+                catState.mode = 'grabbed';
+                catState.tiltDeg = 0;
+                clearIdleBehavior();
+                clearCurvePose();
+                catBtn.classList.remove('is-running', 'is-sprinting', 'is-sliding');
+                catBtn.classList.add('is-grabbed');
+
+                if (catBtn.setPointerCapture) {
+                    try { catBtn.setPointerCapture(e.pointerId); } catch (_) {}
+                }
+            });
+
+            window.addEventListener('pointermove', (e) => {
+                if (!catState.isDragging) return;
+                const dist = Math.hypot(e.clientX - catState.dragStartX, e.clientY - catState.dragStartY);
+                if (dist > 5) catState.dragMoved = true;
+
+                const nextX = e.clientX + window.scrollX - catState.grabOffsetX;
+                const nextY = e.clientY + window.scrollY - catState.grabOffsetY;
+                const dx = nextX - catState.x;
+                if (Math.abs(dx) > 1.5) catState.facing = dx > 0 ? 1 : -1;
+                catState.tiltDeg = Math.max(-14, Math.min(14, dx * 0.7));
+                catState.x = nextX;
+                catState.y = nextY;
+
+                const target = findDropTarget(e.clientX, e.clientY);
+                if (target !== catState.highlightedEl) {
+                    clearHighlight();
+                    if (target) {
+                        target.classList.add('cat-drop-highlight');
+                        catState.highlightedEl = target;
+                    }
+                }
+            });
+
+            const finishGrab = (e) => {
+                if (!catState.isDragging) return;
+                catState.isDragging = false;
+                catBtn.classList.remove('is-grabbed');
+                clearHighlight();
+
+                if (catBtn.releasePointerCapture) {
+                    try { catBtn.releasePointerCapture(e.pointerId); } catch (_) {}
+                }
+
+                if (!catState.dragMoved) {
+                    // Simple tap/click on cat -> happy jump & heart
+                    catState.mode = catState.host.id === 'trendsChart' ? 'curve' : 'roam';
+                    catBtn.classList.remove('is-happy');
+                    void catBtn.offsetWidth;
+                    catBtn.classList.add('is-happy');
+                    const { w } = getCatSize();
+                    spawnParticle('cat-heart', catState.x + w / 2, catState.y - 6, '♥');
+                    return;
+                }
+
+                const dropTarget = findDropTarget(e.clientX, e.clientY);
+                snapToHost(dropTarget || playground, e.clientX);
+            };
+
+            window.addEventListener('pointerup', finishGrab);
+            window.addEventListener('pointercancel', finishGrab);
+
+            // Tap/drag on playground to move cat there (or call it back home)
+            let pgDragging = false;
+            const movePlaygroundTarget = (clientX, showDot) => {
+                const bounds = getHostBounds(playground);
+                const { w } = getCatSize();
+                const local = Math.max(bounds.minLocalX, Math.min(bounds.maxLocalX, clientX - bounds.rect.left - w / 2));
+                if (catState.host !== playground) {
+                    catState.host = playground;
+                    catState.mode = 'falling';
+                    catState.localX = local;
+                    catState.targetLocalX = local;
+                    catState.vy = 0;
+                    catState.y = bounds.restY - 24;
+                    catState.x = bounds.pageLeft + local;
+                } else {
+                    catState.mode = 'roam';
+                    catState.targetLocalX = local;
+                }
+                catState.nextWanderAt = performance.now() + 3200;
+                if (showDot) {
+                    spawnParticle('cat-tap-dot', clientX + window.scrollX, bounds.pageTop + bounds.rect.height - 6);
+                }
+            };
+
+            playground.addEventListener('pointerdown', (e) => {
+                pgDragging = true;
+                movePlaygroundTarget(e.clientX, true);
+            });
+            window.addEventListener('pointermove', (e) => {
+                if (!pgDragging) return;
+                movePlaygroundTarget(e.clientX, false);
+            });
+            window.addEventListener('pointerup', () => { pgDragging = false; });
+            window.addEventListener('pointercancel', () => { pgDragging = false; });
+
+            const tick = (now) => {
+                const dt = Math.min(0.05, (now - catState.lastTime) / 1000);
+                catState.lastTime = now;
+                const { w, h } = getCatSize();
+
+                if (catState.mode === 'falling') {
+                    const bounds = getHostBounds(catState.host);
+                    catState.vy += 980 * dt;
+                    catState.y += catState.vy * dt;
+                    catState.x = bounds.pageLeft + catState.localX;
+                    if (catState.y >= bounds.restY) {
+                        catState.y = bounds.restY;
+                        catState.vy = 0;
+                        catState.mode = 'roam';
+                        if (!reducedMotion) {
+                            spawnParticle('cat-dust', catState.x + w / 2, catState.y + h - 2);
+                        }
+                    }
+                } else if (catState.mode === 'roam') {
+                    const bounds = getHostBounds(catState.host);
+                    if (catState.localX > bounds.maxLocalX) catState.localX = bounds.maxLocalX;
+                    if (catState.targetLocalX > bounds.maxLocalX) catState.targetLocalX = bounds.maxLocalX;
+
+                    const diff = catState.targetLocalX - catState.localX;
+                    const absDiff = Math.abs(diff);
+
+                    if (absDiff > 2) {
+                        clearIdleBehavior();
+                        catState.nextIdleActionAt = now + 550;
+                        catState.facing = diff > 0 ? 1 : -1;
+                        const speed = pgDragging ? 130 : (absDiff > 70 ? 95 : 65);
+                        catState.localX += catState.facing * Math.min(absDiff, speed * dt);
+                        catBtn.classList.add('is-running');
+                        catBtn.classList.remove('is-sliding');
+                        if (speed >= 92) {
+                            catBtn.classList.add('is-sprinting');
+                            catState.dustCooldown -= dt;
+                            if (!reducedMotion && catState.dustCooldown <= 0) {
+                                const tailX = catState.facing === 1 ? catState.x + 6 : catState.x + w - 6;
+                                spawnParticle('cat-dust', tailX, catState.y + h - 2);
+                                catState.dustCooldown = 0.2;
+                            }
+                        } else {
+                            catBtn.classList.remove('is-sprinting');
+                        }
+                    } else {
+                        catState.localX = catState.targetLocalX;
+                        catBtn.classList.remove('is-running', 'is-sprinting', 'is-sliding');
+
+                        // Cycle characteristic idle cat behaviors (loaf, stretch, groom, nap)
+                        if (catState.idleBehavior && now >= catState.idleActionUntil) {
+                            clearIdleBehavior();
+                            catState.nextIdleActionAt = now + 700 + Math.random() * 600;
+                        } else if (!catState.idleBehavior && !pgDragging && now >= catState.nextIdleActionAt) {
+                            const pool = IDLE_BEHAVIORS.filter(b => b !== catState.lastIdleBehavior);
+                            const nextBehavior = pool[Math.floor(Math.random() * pool.length)];
+                            catState.idleBehavior = nextBehavior;
+                            catState.lastIdleBehavior = nextBehavior;
+                            catBtn.classList.add(`is-${nextBehavior}`);
+                            const duration = nextBehavior === 'stretch' ? 1900 : (2400 + Math.random() * 1400);
+                            catState.idleActionUntil = now + duration;
+                            catState.nextWanderAt = Math.max(catState.nextWanderAt, catState.idleActionUntil + 400);
+                        }
+
+                        if (catState.idleBehavior === 'nap' && !reducedMotion) {
+                            catState.zzzCooldown -= dt;
+                            if (catState.zzzCooldown <= 0) {
+                                const headX = catState.facing === 1 ? catState.x + w - 8 : catState.x + 8;
+                                spawnParticle('cat-zzz', headX, catState.y - 2, 'Z');
+                                catState.zzzCooldown = 0.75;
+                            }
+                        }
+
+                        if (!reducedMotion && !pgDragging && !catState.idleBehavior && now >= catState.nextWanderAt && bounds.maxLocalX > 10) {
+                            let candidate = bounds.minLocalX + Math.random() * (bounds.maxLocalX - bounds.minLocalX);
+                            if (Math.abs(candidate - catState.localX) < 18) {
+                                candidate = catState.localX < (bounds.minLocalX + bounds.maxLocalX) / 2
+                                    ? bounds.maxLocalX
+                                    : bounds.minLocalX;
+                            }
+                            catState.targetLocalX = candidate;
+                            catState.nextWanderAt = now + 4000 + Math.random() * 3200;
+                        }
+                    }
+
+                    catState.x = bounds.pageLeft + catState.localX;
+                    catState.y = bounds.restY;
+                    catState.tiltDeg = 0;
+                } else if (catState.mode === 'curve') {
+                    const sample = getChartCurveAt(catState.curveProgress);
+                    if (!sample) {
+                        clearCurvePose();
+                        snapToHost(playground, playground.getBoundingClientRect().left + 20);
+                    } else {
+                        const effectiveSlope = sample.slope * catState.curveDir;
+                        const isAirborne = catState.jumpY < -0.5 || catState.jumpVy < 0;
+
+                        if (!reducedMotion) {
+                            if (isAirborne) {
+                                // Parabolic jump through the air!
+                                catState.curvePhase = 'air';
+                                catBtn.classList.remove('is-crouch', 'is-running', 'is-sprinting', 'is-sliding');
+                                catBtn.classList.toggle('is-jumping-up', catState.jumpVy < 0);
+                                catBtn.classList.toggle('is-jumping-down', catState.jumpVy >= 0);
+
+                                catState.jumpVy += 380 * dt;
+                                catState.jumpY += catState.jumpVy * dt;
+                                catState.curveProgress += catState.curveDir * catState.curveSpeed * dt;
+
+                                // Just landed on the curve!
+                                if (catState.jumpY >= 0) {
+                                    catState.jumpY = 0;
+                                    catState.jumpVy = 0;
+                                    clearCurvePose();
+                                    catBtn.classList.add('is-landing');
+                                    setTimeout(() => catBtn.classList.remove('is-landing'), 200);
+                                    spawnParticle('cat-dust', sample.pageX, sample.pageY);
+                                    catState.curvePhase = 'crouch';
+                                    catState.curveWait = 0.55 + Math.random() * 0.45;
+                                }
+                            } else if (effectiveSlope > 0.14) {
+                                // Steep downhill -> slide smoothly then spring into a leap!
+                                catState.curvePhase = 'slide';
+                                clearCurvePose();
+                                catBtn.classList.add('is-sliding');
+                                catBtn.classList.remove('is-running', 'is-sprinting');
+                                catState.curveSpeed = Math.min(0.26, catState.curveSpeed + effectiveSlope * 0.25 * dt);
+                                catState.curveProgress += catState.curveDir * catState.curveSpeed * dt;
+                                catState.dustCooldown -= dt;
+                                if (catState.dustCooldown <= 0) {
+                                    spawnParticle('cat-dust', catState.x + w / 2, catState.y + h - 2);
+                                    catState.dustCooldown = 0.14;
+                                }
+                            } else {
+                                // Crouch briefly on curve, then pounce/leap to the next curve point!
+                                catBtn.classList.remove('is-sliding', 'is-running', 'is-sprinting', 'is-jumping-up', 'is-jumping-down');
+                                catBtn.classList.add('is-crouch');
+                                catState.curveWait -= dt;
+                                if (catState.curveWait <= 0) {
+                                    catBtn.classList.remove('is-crouch');
+                                    catState.curveSpeed = 0.11 + Math.random() * 0.06;
+                                    catState.jumpVy = -(135 + Math.random() * 35);
+                                    catState.jumpY = -1;
+                                    catState.curvePhase = 'air';
+                                    spawnParticle('cat-dust', sample.pageX, sample.pageY);
+                                }
+                            }
+                        }
+
+                        if (catState.curveProgress >= 0.96) {
+                            catState.curveProgress = 0.96;
+                            catState.curveDir = -1;
+                        } else if (catState.curveProgress <= 0.04) {
+                            catState.curveProgress = 0.04;
+                            catState.curveDir = 1;
+                        }
+
+                        catState.facing = catState.curveDir;
+                        if (catState.jumpY < -0.5) {
+                            // Tilt follows jump trajectory (nose up on takeoff, nose down on descent)
+                            const horizPx = Math.max(60, (sample.maxX - sample.minX) * catState.curveSpeed);
+                            const airDeg = (Math.atan2(catState.jumpVy, horizPx) * 180) / Math.PI;
+                            catState.tiltDeg = Math.max(-30, Math.min(30, airDeg));
+                        } else {
+                            const angleRad = Math.atan(sample.slope);
+                            const rawDeg = (angleRad * 180) / Math.PI;
+                            catState.tiltDeg = Math.max(-32, Math.min(32, rawDeg * catState.facing));
+                        }
+
+                        const updatedSample = getChartCurveAt(catState.curveProgress) || sample;
+                        catState.x = updatedSample.pageX - w / 2;
+                        catState.y = updatedSample.pageY - h + 4 + catState.jumpY;
+                    }
+                }
+
+                catBtn.style.transform = `translate3d(${catState.x}px, ${catState.y}px, 0) scaleX(${catState.facing}) rotate(${catState.tiltDeg}deg)`;
+                requestAnimationFrame(tick);
+            };
+
+            requestAnimationFrame(tick);
+        })();
+
+        // Cat Breed Selector Modal
+        const CAT_BREED_STORAGE_KEY = 'exchange-now-cat-breed';
+        const CAT_BREEDS = [
+            { id: 'cheese', name: '치즈', desc: '따뜻한 노란 줄무늬' },
+            { id: 'mackerel', name: '고등어', desc: '시크한 회색 태비' },
+            { id: 'white', name: '흰둥이', desc: '포근한 순백색' },
+            { id: 'tuxedo', name: '턱시도', desc: '멋쟁이 검정·흰 양말' },
+            { id: 'calico', name: '삼색이', desc: '알록달록 삼색 무늬' }
+        ];
+
+        const getSavedCatBreed = () => {
+            const saved = localStorage.getItem(CAT_BREED_STORAGE_KEY);
+            return CAT_BREEDS.some(b => b.id === saved) ? saved : 'cheese';
+        };
+
+        const applyCatBreed = (breedId) => {
+            const catBtn = document.getElementById('cat-actor');
+            if (!catBtn) return;
+            catBtn.setAttribute('data-cat-breed', breedId);
+            localStorage.setItem(CAT_BREED_STORAGE_KEY, breedId);
+        };
+
+        (() => {
+            const modal = document.getElementById('cat-modal');
+            const openBtn = document.getElementById('cat-modal-btn');
+            const closeBtn = document.getElementById('cat-modal-close');
+            const grid = document.getElementById('cat-breed-grid');
+            const catBtn = document.getElementById('cat-actor');
+            if (!modal || !openBtn || !grid || !catBtn) return;
+
+            const catSvgTemplate = catBtn.querySelector('.cat-svg')?.outerHTML || '';
+
+            const renderBreedGrid = () => {
+                const current = getSavedCatBreed();
+                grid.innerHTML = '';
+                CAT_BREEDS.forEach((breed) => {
+                    const card = document.createElement('button');
+                    card.type = 'button';
+                    card.className = `cat-breed-card${breed.id === current ? ' active' : ''}`;
+                    card.innerHTML = `
+                        <div class="cat-breed-preview" data-cat-breed="${breed.id}">
+                            ${catSvgTemplate}
+                        </div>
+                        <div class="cat-breed-meta">
+                            <span class="cat-breed-name">${breed.name}</span>
+                            <span class="cat-breed-desc">${breed.desc}</span>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => {
+                        applyCatBreed(breed.id);
+                        catBtn.classList.remove('is-happy');
+                        void catBtn.offsetWidth;
+                        catBtn.classList.add('is-happy');
+                        closeModal();
+                    });
+                    grid.appendChild(card);
+                });
+            };
+
+            const openModal = () => {
+                renderBreedGrid();
+                modal.classList.remove('hidden');
+                document.body.classList.add('modal-open');
+            };
+
+            const closeModal = () => {
+                modal.classList.add('hidden');
+                document.body.classList.remove('modal-open');
+            };
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn?.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            });
+        })();
+
         window.onload = () => {
-            switchView('THB');
+            applyTheme(getCurrentTheme());
+            applyCatBreed(getSavedCatBreed());
+            renderNavTabs();
+            switchView(state.currencyOrder[0]);
             fetchRealtimeRates();
 
             // Register Service Worker for PWA

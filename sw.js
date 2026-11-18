@@ -1,8 +1,8 @@
-const CACHE_NAME = "exchange-now-v8";
+const CACHE_NAME = "exchange-now-v9";
 const ASSETS = [
   "./",
   "./index.html",
-  "./index.css?v=5",
+  "./index.css?v=6",
   "./manifest.json",
   "./icon-512.png",
   "https://cdn.jsdelivr.net/npm/chart.js"
